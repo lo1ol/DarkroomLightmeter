@@ -1,0 +1,10 @@
+wokwi
+DarkroomTimer/UserConfig.h
+DarkroomTimer/UserConfig.h.*
+**/build/
+**/.pio/
+**/.vscode/
+**/.DS_Store
+cov.info
+cov_html
+compile_commands.json

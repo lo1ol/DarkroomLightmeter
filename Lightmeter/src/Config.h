@@ -1,0 +1,25 @@
+#pragma once
+
+#define SHOW_REL_BTN_PIN A3
+#define SHOW_TIME_BTN_PIN A2
+#define ENCODER_BTN_PIN A1
+
+#define ENCODER_DT_PIN 2
+#define ENCODER_CLK_PIN 3
+#define ENCODER_DIRECTION 1
+
+#define ENCODER_FAST_TIMEOUT 22
+#define ENCODER_FAST_FAST_TIMEOUT 6
+
+#define DISPLAY_DIO_PIN 6
+#define DISPLAY_CLK_PIN 7
+
+#define ADC_READY_PIN 4
+#define MULTIPLEXER_R1_PIN 5
+
+#define MEASURE_SOFT_CNT 100
+
+#define AMP_R1 300
+#define GAIN_AMP 24
+#define DARK_VOLTAGE_R1 429
+#define DARK_VOLTAGE_R0 850

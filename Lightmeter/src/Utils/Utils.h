@@ -1,0 +1,12 @@
+#pragma once
+
+#include <stdint.h>
+
+#define ADD_TO_ENUM(enumName, current, num) \
+    (enumName)(((uint8_t)(current) + (uint8_t)enumName::last_ + num) % (uint8_t)enumName::last_)
+
+float fastLog10(float x);
+
+// 3 times faster then pow(2, exp)
+// has acuracy 0.01% compare to it
+float fast2pow(float exp);
