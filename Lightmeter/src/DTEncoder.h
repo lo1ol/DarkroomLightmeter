@@ -4,12 +4,13 @@
 
 class DTEncoder {
 public:
-    DTEncoder() = default;
-    void init();
+    DTEncoder();
+    void poweron();
+    void poweroff();
 
     [[nodiscard]] bool getInt(uint16_t& choosen, uint16_t min, uint16_t max, bool ring = false) const;
 
-    void tick();
+    bool tick();
 
 private:
     [[nodiscard]] int8_t getShift() const;
@@ -24,4 +25,5 @@ private:
     uint16_t m_lastTurnChangeTime = 0;
 
     int8_t m_retTurnCounters[3] = {};
+    bool m_hadEvents = false;
 };

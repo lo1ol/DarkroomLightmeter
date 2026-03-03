@@ -9,7 +9,8 @@
 class Lightmeter {
 public:
     Lightmeter();
-    void init();
+    void poweron();
+    void poweroff();
 
     uint16_t getLastMeasure() const;
     void tick();

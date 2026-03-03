@@ -3,7 +3,18 @@
 #include <Arduino.h>
 
 Display::Display() : m_display(DISPLAY_DIO_PIN, DISPLAY_CLK_PIN, true) {
+    pinMode(DISPLAY_POWER_PIN, OUTPUT);
+}
+
+void Display::poweron() {
+    digitalWrite(DISPLAY_POWER_PIN, HIGH);
+    m_display.power(true);
     m_display.brightness(0);
+}
+
+void Display::poweroff() {
+    m_display.power(false);
+    digitalWrite(DISPLAY_POWER_PIN, LOW);
 }
 
 void Display::showVal(uint16_t val, ShowValMode mode) {

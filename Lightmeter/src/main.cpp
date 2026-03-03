@@ -77,10 +77,8 @@ Time calcSuggestedTime(uint16_t logD) {
 } // namespace
 
 void setup() {
-    gEncoder.init();
-    gLightmeter.init();
-    gSettings = Settings::load();
     Serial.begin(9600);
+    gHardware.init();
 }
 
 enum class Mode {
@@ -96,15 +94,10 @@ void loop() {
     static uint16_t gRelMeasure;
     static uint16_t gLastShownAbsVal;
 
-    gDisplay.tick();
-    gShowRelBtn.tick();
-    gShowTimeBtn.tick();
-    gEncoderBtn.tick();
-    gEncoder.tick();
-    gLightmeter.tick();
+    gHardware.tick();
 
     bool needUpdateDisplay = true;
-    if (gMode == Mode::ShowAbs && gShowRelBtn.click()) {
+    if ((gMode == Mode::ShowAbs || gMode == Mode::ShowRel) && gShowRelBtn.click()) {
         gRelMeasure = gLightmeter.getLastMeasure();
         gMode = Mode::ShowRel;
     } else if (gMode == Mode::ShowAbs && gShowTimeBtn.click()) {

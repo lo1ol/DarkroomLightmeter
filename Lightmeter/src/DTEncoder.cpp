@@ -6,6 +6,8 @@
 #include "Hardware.h"
 
 void DTEncoder::isr() {
+    m_hadEvents = true;
+
     uint8_t state = (PIND >> 2) & 0x03;
     uint8_t transition = (m_lastEncoderState << 2) | state;
 
@@ -42,12 +44,17 @@ void DTEncoder::isr_() {
     gEncoder.isr();
 }
 
-void DTEncoder::init() {
+DTEncoder::DTEncoder() {
     pinMode(ENCODER_DT_PIN, INPUT_PULLUP);
     pinMode(ENCODER_CLK_PIN, INPUT_PULLUP);
+}
+void DTEncoder::poweron() {
     attachInterrupt(digitalPinToInterrupt(ENCODER_DT_PIN), isr_, CHANGE);
     attachInterrupt(digitalPinToInterrupt(ENCODER_CLK_PIN), isr_, CHANGE);
     m_lastEncoderState = (PIND >> 2) & 0x03;
+}
+
+void DTEncoder::poweroff() {
 }
 
 int8_t DTEncoder::getShift() const {
@@ -58,12 +65,16 @@ int8_t DTEncoder::getAceleratedShift(uint8_t factor1, uint8_t factor2) const {
     return m_retTurnCounters[0] + m_retTurnCounters[1] * factor1 + m_retTurnCounters[2] * factor2;
 }
 
-void DTEncoder::tick() {
+bool DTEncoder::tick() {
     noInterrupts();
+    bool hadEvents = m_hadEvents;
+    m_hadEvents = false;
     static_assert(sizeof(m_retTurnCounters) == sizeof(m_turnCounters));
     memcpy(m_retTurnCounters, m_turnCounters, sizeof(m_retTurnCounters));
     memset(m_turnCounters, 0, sizeof(m_turnCounters));
     interrupts();
+
+    return hadEvents;
 }
 
 bool DTEncoder::getInt(uint16_t& choosen, uint16_t min, uint16_t max, bool ring) const {

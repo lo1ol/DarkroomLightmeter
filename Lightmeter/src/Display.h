@@ -10,6 +10,9 @@ class Display {
 public:
     Display();
 
+    void poweron();
+    void poweroff();
+
     void tick();
 
     enum class ShowValMode {

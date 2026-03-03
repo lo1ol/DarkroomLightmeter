@@ -17,3 +17,19 @@ extern Lightmeter gLightmeter;
 extern DTEncoder gEncoder;
 
 extern Settings gSettings;
+
+// owner of all Hardware devices
+class Hardware {
+public:
+    void init();
+    void tick();
+
+private:
+    void sleep();
+    static void wakeUp();
+
+    bool m_disabled = false;
+    uint32_t m_lastActionTime;
+};
+
+extern Hardware gHardware;

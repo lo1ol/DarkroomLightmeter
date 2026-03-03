@@ -9,6 +9,7 @@
 #include <assert.h>
 #include <math.h>
 
+#include "Hardware.h"
 #include "Utils/Utils.h"
 
 #define MAX_BRIGHTNESS float(int32_t(AMP_R1) * GAIN_AMP * (1 << 15))
@@ -35,27 +36,46 @@ uint16_t toLogD(const int32_t (&kMeasures)[MEASURE_SOFT_CNT]) {
 }
 } // namespace
 
-Lightmeter::Lightmeter() : m_ads(0x48) {}
+Lightmeter::Lightmeter() : m_ads(0x48) {
+    pinMode(ADC_POWER_PIN, OUTPUT);
+    pinMode(DIOD_POWER_PIN, OUTPUT);
+    pinMode(MULTIPLEXER_POWER_PIN, OUTPUT);
 
-void Lightmeter::init() {
     pinMode(MULTIPLEXER_R1_PIN, OUTPUT);
-    digitalWrite(MULTIPLEXER_R1_PIN, HIGH); // TODO
+    digitalWrite(MULTIPLEXER_R1_PIN, HIGH); // TODO it's enable R0
+}
 
-    static Lightmeter* gLightmeter = this;
+void Lightmeter::poweron() {
+    m_ampLevel = AmpLevel::R0_G0;
+    digitalWrite(DIOD_POWER_PIN, HIGH);
+    digitalWrite(MULTIPLEXER_R1_PIN, HIGH); // TODO it's enable R0
+    digitalWrite(ADC_POWER_PIN, HIGH);
+    digitalWrite(MULTIPLEXER_POWER_PIN, HIGH);
+    pinMode(ADC_READY_PIN, INPUT_PULLUP);
+    delay(100);
 
     Wire.begin();
-
     m_ads.begin();
     m_ads.setComparatorThresholdHigh(0x8000);
     m_ads.setComparatorThresholdLow(0x0000);
     m_ads.setComparatorQueConvert(0);
 
-    pinMode(ADC_READY_PIN, INPUT_PULLUP);
     attachPinChangeInterrupt(
-        digitalPinToPinChangeInterrupt(ADC_READY_PIN), [] { gLightmeter->m_readyFlag = true; }, RISING);
+        digitalPinToPinChangeInterrupt(ADC_READY_PIN), [] { gLightmeter.m_readyFlag = true; }, RISING);
 
     m_ads.setMode(0);
     requestNextMeasure();
+}
+
+void Lightmeter::poweroff() {
+    pinMode(A4, INPUT);
+    pinMode(A5, INPUT);
+    m_ampLevel = AmpLevel::R0_G0;
+    digitalWrite(DIOD_POWER_PIN, LOW);
+    digitalWrite(ADC_POWER_PIN, LOW);
+    digitalWrite(MULTIPLEXER_R1_PIN, LOW);
+    digitalWrite(MULTIPLEXER_POWER_PIN, LOW);
+    pinMode(ADC_READY_PIN, INPUT);
 }
 
 void Lightmeter::tick() {
