@@ -30,7 +30,9 @@ private:
     };
 
     AmpLevel m_ampLevel = AmpLevel::R0_G0;
+    int32_t m_maxAdsVal = (5 / 6.144) * (1 << 15);
     int32_t m_measures[MEASURE_SOFT_CNT] = {};
     uint8_t m_measureIteration = 0;
     bool m_dropNextValue = true;
+    bool m_readDiodVoltage = false;
 };

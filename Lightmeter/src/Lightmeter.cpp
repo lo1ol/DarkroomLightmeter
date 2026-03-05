@@ -52,10 +52,11 @@ void Lightmeter::poweron() {
     digitalWrite(ADC_POWER_PIN, HIGH);
     digitalWrite(MULTIPLEXER_POWER_PIN, HIGH);
     pinMode(ADC_READY_PIN, INPUT_PULLUP);
-    delay(100);
+    delay(10);
 
     Wire.begin();
     m_ads.begin();
+    m_ads.setDataRate(ADS1X15_DATARATE_0);
     m_ads.setComparatorThresholdHigh(0x8000);
     m_ads.setComparatorThresholdLow(0x0000);
     m_ads.setComparatorQueConvert(0);
@@ -64,6 +65,7 @@ void Lightmeter::poweron() {
         digitalPinToPinChangeInterrupt(ADC_READY_PIN), [] { gLightmeter.m_readyFlag = true; }, RISING);
 
     m_ads.setMode(0);
+    m_readDiodVoltage = true;
     requestNextMeasure();
 }
 
@@ -90,21 +92,25 @@ void Lightmeter::tick() {
 
     int32_t val = m_ads.getValue();
 
-    int32_t adjustVal = val;
+    if (m_readDiodVoltage) {
+        m_readDiodVoltage = false;
+        m_maxAdsVal = val - (1.3 / 6.144) * (1 << 15); // remove voltage drop on diod
+    } else {
+        int32_t adjustVal = val;
 
-    adjustVal -= gAmpDarkVoltageMap[m_ampLevel];
-    adjustVal *= gAmpMap[m_ampLevel];
+        adjustVal -= gAmpDarkVoltageMap[m_ampLevel];
+        adjustVal *= gAmpMap[m_ampLevel];
+        m_measureIteration = (m_measureIteration + 1) % MEASURE_SOFT_CNT;
+        m_measures[m_measureIteration] = adjustVal;
 
-    m_measures[m_measureIteration] = adjustVal;
-    m_measureIteration = (m_measureIteration + 1) % MEASURE_SOFT_CNT;
+        auto adjust = ampAdjust(val);
+        if (adjust) {
+            reinterpret_cast<int8_t&>(m_ampLevel) += adjust;
 
-    auto adjust = ampAdjust(val);
-    if (adjust) {
-        reinterpret_cast<int8_t&>(m_ampLevel) += adjust;
-
-        bool highResistor = m_ampLevel > AmpLevel::R0_G1;
-        digitalWrite(MULTIPLEXER_R1_PIN, !highResistor);
-        m_dropNextValue = true;
+            bool highResistor = m_ampLevel > AmpLevel::R0_G1;
+            digitalWrite(MULTIPLEXER_R1_PIN, !highResistor);
+            m_dropNextValue = true;
+        }
     }
 
     requestNextMeasure();
@@ -125,7 +131,7 @@ int8_t Lightmeter::ampAdjust(uint16_t val) const {
     case AmpLevel::R1_G0:
         if (val < 1000)
             return 1;
-        if (val > 15000)
+        if (val > m_maxAdsVal * 0.9)
             return -1;
         return 0;
     case AmpLevel::R1_G1:
@@ -138,9 +144,15 @@ int8_t Lightmeter::ampAdjust(uint16_t val) const {
 }
 
 void Lightmeter::requestNextMeasure() {
-    bool needGain = m_ampLevel == AmpLevel::R0_G1 || m_ampLevel == AmpLevel::R1_G1;
-    m_ads.setGain(needGain ? 16 : 0);
-    m_ads.requestADC_Differential_0_3();
+    if (m_readDiodVoltage) {
+        m_ads.setGain(0);
+        m_ads.requestADC_Differential_1_3();
+    } else {
+        bool needGain = m_ampLevel == AmpLevel::R0_G1 || m_ampLevel == AmpLevel::R1_G1;
+        m_ads.setGain(needGain ? 16 : 0);
+        m_ads.requestADC_Differential_0_3();
+    }
+
     m_readyFlag = false;
 }
 
