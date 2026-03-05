@@ -4,7 +4,6 @@
 #include <PinChangeInterrupt.h>
 
 ButtonT<SHOW_REL_BTN_PIN> gShowRelBtn;
-ButtonT<SHOW_TIME_BTN_PIN> gShowTimeBtn;
 ButtonT<ENCODER_BTN_PIN> gEncoderBtn;
 
 Settings gSettings = Settings::load();
@@ -30,7 +29,7 @@ void Hardware::tick() {
     gDisplay.tick();
     gLightmeter.tick();
 
-    if (gEncoder.tick() || gShowTimeBtn.tick() || gShowRelBtn.tick() || gEncoderBtn.tick())
+    if (gEncoder.tick() || gShowRelBtn.tick() || gEncoderBtn.tick())
         m_lastActionTime = millis();
 
     if (static_cast<uint32_t>(millis() - m_lastActionTime) > AUTOSLEEP_TIME)
@@ -55,7 +54,6 @@ void Hardware::sleep() {
     attachPinChangeInterrupt(digitalPinToPinChangeInterrupt(ENCODER_CLK_PIN), Hardware::wakeUp, CHANGE);
     attachPinChangeInterrupt(digitalPinToPinChangeInterrupt(ENCODER_BTN_PIN), Hardware::wakeUp, FALLING);
     attachPinChangeInterrupt(digitalPinToPinChangeInterrupt(SHOW_REL_BTN_PIN), Hardware::wakeUp, FALLING);
-    attachPinChangeInterrupt(digitalPinToPinChangeInterrupt(SHOW_TIME_BTN_PIN), Hardware::wakeUp, FALLING);
 
     m_disabled = true;
 
@@ -69,7 +67,6 @@ void Hardware::sleep() {
     detachPinChangeInterrupt(digitalPinToPinChangeInterrupt(ENCODER_DT_PIN));
     detachPinChangeInterrupt(digitalPinToPinChangeInterrupt(ENCODER_BTN_PIN));
     detachPinChangeInterrupt(digitalPinToPinChangeInterrupt(SHOW_REL_BTN_PIN));
-    detachPinChangeInterrupt(digitalPinToPinChangeInterrupt(SHOW_TIME_BTN_PIN));
 
     gDisplay.poweron();
     gEncoder.poweron();

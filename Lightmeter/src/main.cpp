@@ -100,9 +100,9 @@ void loop() {
     if ((gMode == Mode::ShowAbs || gMode == Mode::ShowRel) && gShowRelBtn.click()) {
         gRelMeasure = gLightmeter.getLastMeasure();
         gMode = Mode::ShowRel;
-    } else if (gMode == Mode::ShowAbs && gShowTimeBtn.click()) {
+    } else if (gMode == Mode::ShowAbs && gEncoderBtn.click()) {
         gMode = Mode::ShowTime;
-    } else if (gMode == Mode::ShowTime && gShowTimeBtn.click()) {
+    } else if (gMode == Mode::ShowTime && gEncoderBtn.click()) {
         gMode = Mode::ShowAbs;
     } else if (gMode == Mode::ShowAbs && gEncoderBtn.hold()) {
         startSetBase();
@@ -110,7 +110,7 @@ void loop() {
     } else if (gMode == Mode::SetBase && gEncoderBtn.hold()) {
         finishSetBase();
         gMode = Mode::ShowAbs;
-    } else if (gShowRelBtn.hold() || gShowTimeBtn.hold() || gEncoderBtn.hold()) {
+    } else if (gShowRelBtn.hold() || gEncoderBtn.hold()) {
         gMode = Mode::ShowAbs;
     } else {
         needUpdateDisplay = false;

@@ -9,7 +9,6 @@
 #include "Settings.h"
 
 extern ButtonT<SHOW_REL_BTN_PIN> gShowRelBtn;
-extern ButtonT<SHOW_TIME_BTN_PIN> gShowTimeBtn;
 extern ButtonT<ENCODER_BTN_PIN> gEncoderBtn;
 
 extern Display gDisplay;

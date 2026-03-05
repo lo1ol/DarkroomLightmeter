@@ -1,7 +1,6 @@
 #pragma once
 
 #define SHOW_REL_BTN_PIN A3
-#define SHOW_TIME_BTN_PIN A2
 #define ENCODER_BTN_PIN A1
 
 #define ENCODER_DT_PIN 2
