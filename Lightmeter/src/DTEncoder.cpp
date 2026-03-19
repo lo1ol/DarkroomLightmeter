@@ -30,12 +30,13 @@ void DTEncoder::isr() {
     m_subPos = 0;
 
     uint16_t curTime = millis();
-    if (static_cast<uint16_t>(curTime - m_lastTurnChangeTime) < ENCODER_FAST_FAST_TIMEOUT)
+    if (static_cast<uint16_t>(curTime - m_lastTurnChangeTime) < ENCODER_FAST_FAST_TIMEOUT) {
         m_turnCounters[2] += dir;
-    else if (static_cast<uint16_t>(curTime - m_lastTurnChangeTime) < ENCODER_FAST_TIMEOUT)
+    } else if (static_cast<uint16_t>(curTime - m_lastTurnChangeTime) < ENCODER_FAST_TIMEOUT) {
         m_turnCounters[1] += dir;
-    else
+    } else {
         m_turnCounters[0] += dir;
+    }
 
     m_lastTurnChangeTime = curTime;
 }
@@ -55,6 +56,8 @@ void DTEncoder::poweron() {
 }
 
 void DTEncoder::poweroff() {
+    detachInterrupt(digitalPinToInterrupt(ENCODER_DT_PIN));
+    detachInterrupt(digitalPinToInterrupt(ENCODER_CLK_PIN));
 }
 
 int8_t DTEncoder::getShift() const {

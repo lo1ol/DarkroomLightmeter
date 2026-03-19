@@ -41,7 +41,7 @@ void handleSetBase() {
 
     switch (gSetBaseStage) {
     case SetBaseStage::LodD:
-        if (gEncoder.getInt(gSettings.baseLogD, 20, 699)) {
+        if (gEncoder.getInt(gSettings.baseLogD, 20, 600)) {
             gDisplay.showVal(gSettings.baseLogD, Display::ShowValMode::Set);
         }
         break;
@@ -77,7 +77,6 @@ Time calcSuggestedTime(uint16_t logD) {
 } // namespace
 
 void setup() {
-    Serial.begin(9600);
     gHardware.init();
 }
 
@@ -104,13 +103,18 @@ void loop() {
         gMode = Mode::ShowTime;
     } else if (gMode == Mode::ShowTime && gEncoderBtn.click()) {
         gMode = Mode::ShowAbs;
-    } else if (gMode == Mode::ShowAbs && gEncoderBtn.hold()) {
+    } else if (gMode == Mode::ShowAbs && gEncoderBtn.hold() && !gSleepBtn.pressing()) {
         startSetBase();
         gMode = Mode::SetBase;
-    } else if (gMode == Mode::SetBase && gEncoderBtn.hold()) {
+    } else if (gMode == Mode::SetBase && gEncoderBtn.hold() && !gSleepBtn.pressing()) {
         finishSetBase();
         gMode = Mode::ShowAbs;
-    } else if (gShowRelBtn.hold() || gEncoderBtn.hold()) {
+    } else if (gSleepBtn.hold()) {
+        if (gMode == Mode::SetBase)
+            finishSetBase();
+        gMode = Mode::ShowAbs;
+        gHardware.goToSleep();
+    } else if ((gShowRelBtn.hold() || gEncoderBtn.hold()) && !gSleepBtn.pressing()) {
         gMode = Mode::ShowAbs;
     } else {
         needUpdateDisplay = false;

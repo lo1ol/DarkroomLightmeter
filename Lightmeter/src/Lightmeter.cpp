@@ -37,20 +37,13 @@ uint16_t toLogD(const int32_t (&kMeasures)[MEASURE_SOFT_CNT]) {
 } // namespace
 
 Lightmeter::Lightmeter() : m_ads(0x48) {
-    pinMode(ADC_POWER_PIN, OUTPUT);
-    pinMode(DIOD_POWER_PIN, OUTPUT);
-    pinMode(MULTIPLEXER_POWER_PIN, OUTPUT);
-
     pinMode(MULTIPLEXER_R1_PIN, OUTPUT);
-    digitalWrite(MULTIPLEXER_R1_PIN, HIGH); // TODO it's enable R0
+    digitalWrite(MULTIPLEXER_R1_PIN, HIGH);
 }
 
 void Lightmeter::poweron() {
     m_ampLevel = AmpLevel::R0_G0;
-    digitalWrite(DIOD_POWER_PIN, HIGH);
-    digitalWrite(MULTIPLEXER_R1_PIN, HIGH); // TODO it's enable R0
-    digitalWrite(ADC_POWER_PIN, HIGH);
-    digitalWrite(MULTIPLEXER_POWER_PIN, HIGH);
+    digitalWrite(MULTIPLEXER_R1_PIN, HIGH);
     pinMode(ADC_READY_PIN, INPUT_PULLUP);
     delay(10);
 
@@ -65,7 +58,6 @@ void Lightmeter::poweron() {
         digitalPinToPinChangeInterrupt(ADC_READY_PIN), [] { gLightmeter.m_readyFlag = true; }, RISING);
 
     m_ads.setMode(0);
-    m_readDiodVoltage = true;
     requestNextMeasure();
 }
 
@@ -73,10 +65,7 @@ void Lightmeter::poweroff() {
     pinMode(A4, INPUT);
     pinMode(A5, INPUT);
     m_ampLevel = AmpLevel::R0_G0;
-    digitalWrite(DIOD_POWER_PIN, LOW);
-    digitalWrite(ADC_POWER_PIN, LOW);
     digitalWrite(MULTIPLEXER_R1_PIN, LOW);
-    digitalWrite(MULTIPLEXER_POWER_PIN, LOW);
     pinMode(ADC_READY_PIN, INPUT);
 }
 
@@ -91,26 +80,20 @@ void Lightmeter::tick() {
     }
 
     int32_t val = m_ads.getValue();
+    int32_t adjustVal = val;
 
-    if (m_readDiodVoltage) {
-        m_readDiodVoltage = false;
-        m_maxAdsVal = val - (1.3 / 6.144) * (1 << 15); // remove voltage drop on diod
-    } else {
-        int32_t adjustVal = val;
+    adjustVal -= gAmpDarkVoltageMap[m_ampLevel];
+    adjustVal *= gAmpMap[m_ampLevel];
+    m_measureIteration = (m_measureIteration + 1) % MEASURE_SOFT_CNT;
+    m_measures[m_measureIteration] = adjustVal;
 
-        adjustVal -= gAmpDarkVoltageMap[m_ampLevel];
-        adjustVal *= gAmpMap[m_ampLevel];
-        m_measureIteration = (m_measureIteration + 1) % MEASURE_SOFT_CNT;
-        m_measures[m_measureIteration] = adjustVal;
+    auto adjust = ampAdjust(val);
+    if (adjust) {
+        reinterpret_cast<int8_t&>(m_ampLevel) += adjust;
 
-        auto adjust = ampAdjust(val);
-        if (adjust) {
-            reinterpret_cast<int8_t&>(m_ampLevel) += adjust;
-
-            bool highResistor = m_ampLevel > AmpLevel::R0_G1;
-            digitalWrite(MULTIPLEXER_R1_PIN, !highResistor);
-            m_dropNextValue = true;
-        }
+        bool highResistor = m_ampLevel > AmpLevel::R0_G1;
+        digitalWrite(MULTIPLEXER_R1_PIN, !highResistor);
+        m_dropNextValue = true;
     }
 
     requestNextMeasure();
@@ -131,7 +114,7 @@ int8_t Lightmeter::ampAdjust(uint16_t val) const {
     case AmpLevel::R1_G0:
         if (val < 1000)
             return 1;
-        if (val > m_maxAdsVal * 0.9)
+        if (val > 15000)
             return -1;
         return 0;
     case AmpLevel::R1_G1:
@@ -144,16 +127,11 @@ int8_t Lightmeter::ampAdjust(uint16_t val) const {
 }
 
 void Lightmeter::requestNextMeasure() {
-    if (m_readDiodVoltage) {
-        m_ads.setGain(0);
-        m_ads.requestADC_Differential_1_3();
-    } else {
-        bool needGain = m_ampLevel == AmpLevel::R0_G1 || m_ampLevel == AmpLevel::R1_G1;
-        m_ads.setGain(needGain ? 16 : 0);
-        m_ads.requestADC_Differential_0_3();
-    }
-
     m_readyFlag = false;
+
+    bool needGain = m_ampLevel == AmpLevel::R0_G1 || m_ampLevel == AmpLevel::R1_G1;
+    m_ads.setGain(needGain ? 16 : 0);
+    m_ads.requestADC_Differential_0_3();
 }
 
 uint16_t Lightmeter::getLastMeasure() const {

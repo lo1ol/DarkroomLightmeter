@@ -5,6 +5,7 @@
 
 ButtonT<SHOW_REL_BTN_PIN> gShowRelBtn;
 ButtonT<ENCODER_BTN_PIN> gEncoderBtn;
+VirtButton gSleepBtn;
 
 Settings gSettings = Settings::load();
 Display gDisplay;
@@ -17,6 +18,16 @@ void Hardware::init() {
     power.autoCalibrate();
     power.setSleepResolution(SLEEP_8192MS);
 
+    pinMode(ENCODER_POWER_PIN, OUTPUT);
+    pinMode(ADC_MULTIMPLEXER_POWER_PIN, OUTPUT);
+    pinMode(DISPLAY_POWER_PIN, OUTPUT);
+    pinMode(DIOD_POWER_PIN, OUTPUT);
+
+    digitalWrite(ENCODER_POWER_PIN, HIGH);
+    digitalWrite(DISPLAY_POWER_PIN, HIGH);
+    digitalWrite(ADC_MULTIMPLEXER_POWER_PIN, HIGH);
+    digitalWrite(DIOD_POWER_PIN, HIGH);
+
     gEncoder.poweron();
     gDisplay.poweron();
     gLightmeter.poweron();
@@ -26,14 +37,20 @@ void Hardware::init() {
 }
 
 void Hardware::tick() {
+again:
     gDisplay.tick();
     gLightmeter.tick();
 
     if (gEncoder.tick() || gShowRelBtn.tick() || gEncoderBtn.tick())
         m_lastActionTime = millis();
 
-    if (static_cast<uint32_t>(millis() - m_lastActionTime) > AUTOSLEEP_TIME)
+    gSleepBtn.tick(gEncoderBtn, gShowRelBtn);
+
+    if (m_goToSleep || static_cast<uint32_t>(millis() - m_lastActionTime) > AUTOSLEEP_TIME) {
+        m_goToSleep = false;
         sleep();
+        goto again;
+    }
 }
 
 void Hardware::wakeUp() {
@@ -47,6 +64,10 @@ void Hardware::wakeUp() {
 }
 
 void Hardware::sleep() {
+    digitalWrite(DISPLAY_POWER_PIN, LOW);
+    digitalWrite(DIOD_POWER_PIN, LOW);
+    digitalWrite(ADC_MULTIMPLEXER_POWER_PIN, LOW);
+
     gDisplay.poweroff();
     gLightmeter.poweroff();
     gEncoder.poweroff();
@@ -68,8 +89,12 @@ void Hardware::sleep() {
     detachPinChangeInterrupt(digitalPinToPinChangeInterrupt(ENCODER_BTN_PIN));
     detachPinChangeInterrupt(digitalPinToPinChangeInterrupt(SHOW_REL_BTN_PIN));
 
-    gDisplay.poweron();
+    digitalWrite(DISPLAY_POWER_PIN, HIGH);
+    digitalWrite(ADC_MULTIMPLEXER_POWER_PIN, HIGH);
+    digitalWrite(DIOD_POWER_PIN, HIGH);
+
     gEncoder.poweron();
+    gDisplay.poweron();
     gLightmeter.poweron();
 
     m_lastActionTime = millis();
