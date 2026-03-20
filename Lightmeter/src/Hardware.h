@@ -29,10 +29,14 @@ public:
 private:
     void sleep();
     static void wakeUp();
+    void poweron();
+    void poweroff();
 
     bool m_disabled = false;
     bool m_goToSleep = false;
     uint32_t m_lastActionTime;
+    bool m_justWakedUp = false;
+    uint32_t m_wakeUpTime;
 };
 
 extern Hardware gHardware;

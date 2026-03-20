@@ -23,23 +23,21 @@ void Hardware::init() {
     pinMode(DISPLAY_POWER_PIN, OUTPUT);
     pinMode(DIOD_POWER_PIN, OUTPUT);
 
-    digitalWrite(ENCODER_POWER_PIN, HIGH);
-    digitalWrite(DISPLAY_POWER_PIN, HIGH);
-    digitalWrite(ADC_MULTIMPLEXER_POWER_PIN, HIGH);
-    digitalWrite(DIOD_POWER_PIN, HIGH);
+    poweron();
 
-    gEncoder.poweron();
-    gDisplay.poweron();
-    gLightmeter.poweron();
     gSettings = Settings::load();
-
-    m_lastActionTime = millis();
 }
 
 void Hardware::tick() {
 again:
     gDisplay.tick();
     gLightmeter.tick();
+
+    if (m_justWakedUp) {
+        gShowRelBtn.skipEvents();
+        gEncoderBtn.skipEvents();
+        m_justWakedUp = static_cast<uint32_t>(millis()) - m_wakeUpTime < 100;
+    }
 
     if (gEncoder.tick() || gShowRelBtn.tick() || gEncoderBtn.tick())
         m_lastActionTime = millis();
@@ -64,6 +62,15 @@ void Hardware::wakeUp() {
 }
 
 void Hardware::sleep() {
+    poweroff();
+
+    while (m_disabled)
+        power.sleepDelay(60 * 60 * 1000L);
+
+    poweron();
+}
+
+void Hardware::poweroff() {
     digitalWrite(DISPLAY_POWER_PIN, LOW);
     digitalWrite(DIOD_POWER_PIN, LOW);
     digitalWrite(ADC_MULTIMPLEXER_POWER_PIN, LOW);
@@ -72,6 +79,10 @@ void Hardware::sleep() {
     gLightmeter.poweroff();
     gEncoder.poweroff();
 
+    // wait till user stop doing actions
+    while (gShowRelBtn.tick() || gEncoderBtn.tick() || gShowRelBtn.pressing() || gEncoderBtn.pressing())
+        ;
+
     attachPinChangeInterrupt(digitalPinToPinChangeInterrupt(ENCODER_CLK_PIN), Hardware::wakeUp, CHANGE);
     attachPinChangeInterrupt(digitalPinToPinChangeInterrupt(ENCODER_BTN_PIN), Hardware::wakeUp, FALLING);
     attachPinChangeInterrupt(digitalPinToPinChangeInterrupt(SHOW_REL_BTN_PIN), Hardware::wakeUp, FALLING);
@@ -79,9 +90,9 @@ void Hardware::sleep() {
     m_disabled = true;
 
     power.hardwareDisable(PWR_ALL);
-    while (m_disabled)
-        power.sleepDelay(60 * 60 * 1000L);
+}
 
+void Hardware::poweron() {
     power.hardwareEnable(PWR_ALL);
     power.hardwareDisable(PWR_SPI | PWR_USB | PWR_ADC | PWR_TIMER1 | PWR_TIMER2 | PWR_UART1 | PWR_UART2 | PWR_UART3);
 
@@ -89,6 +100,7 @@ void Hardware::sleep() {
     detachPinChangeInterrupt(digitalPinToPinChangeInterrupt(ENCODER_BTN_PIN));
     detachPinChangeInterrupt(digitalPinToPinChangeInterrupt(SHOW_REL_BTN_PIN));
 
+    digitalWrite(ENCODER_POWER_PIN, HIGH);
     digitalWrite(DISPLAY_POWER_PIN, HIGH);
     digitalWrite(ADC_MULTIMPLEXER_POWER_PIN, HIGH);
     digitalWrite(DIOD_POWER_PIN, HIGH);
@@ -97,5 +109,12 @@ void Hardware::sleep() {
     gDisplay.poweron();
     gLightmeter.poweron();
 
+    if (gEncoderBtn.tick())
+        gEncoderBtn.skipEvents();
+    if (gShowRelBtn.tick())
+        gShowRelBtn.skipEvents();
+
+    m_justWakedUp = true;
+    m_wakeUpTime = millis();
     m_lastActionTime = millis();
 }
