@@ -15,21 +15,23 @@ public:
     uint16_t getLastMeasure() const;
     void tick();
 
+    bool calibrate();
+
 private:
     void requestNextMeasure();
     int8_t ampAdjust(uint16_t val) const;
 
     ADS1115 m_ads;
-    bool m_readyFlag = false;
+    volatile bool m_readyFlag = false;
 
     enum AmpLevel : uint8_t {
-        R0_G0,
-        R0_G1,
-        R1_G0,
-        R1_G1,
+        R_LOW_G0,
+        R_LOW_G1,
+        R_HIGH_G0,
+        R_HIGH_G1,
     };
 
-    AmpLevel m_ampLevel = AmpLevel::R0_G0;
+    AmpLevel m_ampLevel = AmpLevel::R_LOW_G0;
     int32_t m_measures[MEASURE_SOFT_CNT] = {};
     uint8_t m_measureIteration = 0;
     bool m_dropNextValue = true;

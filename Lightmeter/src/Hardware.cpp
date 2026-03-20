@@ -79,9 +79,15 @@ void Hardware::poweroff() {
     gLightmeter.poweroff();
     gEncoder.poweroff();
 
+    uint32_t holdTime = millis();
+
     // wait till user stop doing actions
-    while (gShowRelBtn.tick() || gEncoderBtn.tick() || gShowRelBtn.pressing() || gEncoderBtn.pressing())
-        ;
+    while (gShowRelBtn.tick() || gEncoderBtn.tick() || gShowRelBtn.pressing() || gEncoderBtn.pressing()) {
+        if (millis() - holdTime < 5000)
+            continue;
+        startCalibration();
+        return;
+    }
 
     attachPinChangeInterrupt(digitalPinToPinChangeInterrupt(ENCODER_CLK_PIN), Hardware::wakeUp, CHANGE);
     attachPinChangeInterrupt(digitalPinToPinChangeInterrupt(ENCODER_BTN_PIN), Hardware::wakeUp, FALLING);
@@ -117,4 +123,11 @@ void Hardware::poweron() {
     m_justWakedUp = true;
     m_wakeUpTime = millis();
     m_lastActionTime = millis();
+}
+
+void Hardware::startCalibration() {
+    poweron();
+    gDisplay.showCalibrationAnim();
+    bool res = gLightmeter.calibrate();
+    gDisplay.showRes(res);
 }

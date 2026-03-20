@@ -95,6 +95,24 @@ uint8_t getCharCode(char ch) {
         return 0x7F;
     case '9':
         return 0x7D;
+    case 'C':
+        return 0x0F;
+    case 'A':
+        return 0x7E;
+    case 'L':
+        return 0x07;
+    case '-':
+        return 0x40;
+    case 'r':
+        return 0x42;
+    case 'g':
+        return 0x7D;
+    case 'o':
+        return 0x63;
+    case 'b':
+        return 0x67;
+    case 'd':
+        return 0x73;
     default:
         return 0x00;
     }
@@ -116,8 +134,8 @@ void Display::tickVal() {
     uint16_t val = m_val.val.val;
 
     if (val == 999) {
-        m_display.buffer[1] = 0x07;
-        m_display.buffer[0] = 0x63;
+        m_display.buffer[1] = getCharCode('L');
+        m_display.buffer[0] = getCharCode('0');
     } else {
         m_display.buffer[3] = dig(val, 1000);
         m_display.buffer[2] = dig(val, 100);
@@ -155,7 +173,7 @@ void Display::tickRelVal() {
     else
         signPos = 3;
 
-    m_display.buffer[signPos] = minus ? 64 : 66;
+    m_display.buffer[signPos] = getCharCode(minus ? '-' : 'r');
 
     m_display.colon(false);
 }
@@ -176,4 +194,49 @@ void Display::tickTime() {
     }
 
     m_display.colon(true);
+}
+
+void Display::showCalibrationAnim() {
+    m_display.buffer[3] = 0;
+    m_display.buffer[2] = getCharCode('C');
+    m_display.buffer[1] = getCharCode('A');
+    m_display.buffer[0] = getCharCode('L');
+    m_display.update();
+    delay(2000);
+
+    m_display.buffer[0] = 0;
+    m_display.buffer[2] = 0;
+    m_display.buffer[1] = 0;
+
+    m_display.buffer[0] = getCharCode('3');
+    m_display.update();
+    delay(1000);
+
+    m_display.buffer[0] = getCharCode('2');
+    m_display.update();
+    delay(1000);
+
+    m_display.buffer[0] = getCharCode('1');
+    m_display.update();
+    delay(1000);
+
+    m_display.buffer[0] = 0;
+    m_display.update();
+}
+
+void Display::showRes(bool good) {
+    if (good) {
+        m_display.buffer[3] = getCharCode('g');
+        m_display.buffer[2] = getCharCode('0');
+        m_display.buffer[1] = getCharCode('0');
+        m_display.buffer[0] = getCharCode('d');
+    } else {
+        m_display.buffer[3] = 0;
+        m_display.buffer[2] = getCharCode('b');
+        m_display.buffer[1] = getCharCode('A');
+        m_display.buffer[0] = getCharCode('d');
+    }
+
+    m_display.update();
+    delay(2000);
 }

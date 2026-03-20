@@ -14,6 +14,8 @@ Settings Settings::load() {
 
     GET_SETTING(res.baseLogD);
     GET_SETTING(res.baseTime);
+    GET_SETTING(res.lowResistorDarkVoltageValue);
+    GET_SETTING(res.highResistorDarkVoltageValue);
 
     uint32_t hash = crc32.finalize();
     uint32_t storedHash;
@@ -24,6 +26,8 @@ Settings Settings::load() {
     badSettings |= hash != storedHash;
     badSettings |= res.baseLogD > 999;
     badSettings |= res.baseTime > kMaxTime;
+    badSettings |= res.lowResistorDarkVoltageValue > 5000;
+    badSettings |= res.highResistorDarkVoltageValue > 5000;
 
     if (badSettings) {
         res = kDefaultSettings;
@@ -43,6 +47,8 @@ void Settings::updateEEPROM() {
 
     PUT_SETTING(baseLogD);
     PUT_SETTING(baseTime);
+    PUT_SETTING(lowResistorDarkVoltageValue);
+    PUT_SETTING(highResistorDarkVoltageValue);
     PUT_SETTING(crc32.finalize());
 #undef PUT_SETTING
 }

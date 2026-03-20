@@ -32,6 +32,9 @@ public:
 
     void resetBlink(bool showBlinked = true);
 
+    void showCalibrationAnim();
+    void showRes(bool good);
+
 private:
     void tickVal();
     void tickRelVal();

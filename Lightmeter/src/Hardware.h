@@ -32,6 +32,8 @@ private:
     void poweron();
     void poweroff();
 
+    void startCalibration();
+
     bool m_disabled = false;
     bool m_goToSleep = false;
     uint32_t m_lastActionTime;

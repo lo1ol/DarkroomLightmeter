@@ -9,6 +9,10 @@ struct Settings {
 
     uint16_t baseLogD;
     Time baseTime;
+    uint32_t lowResistorDarkVoltageValue;
+    uint32_t highResistorDarkVoltageValue;
 };
 
-constexpr Settings kDefaultSettings{ .baseLogD = 400, .baseTime = Time(60) };
+constexpr Settings kDefaultSettings{
+    .baseLogD = 400, .baseTime = Time(60), .lowResistorDarkVoltageValue = 80, .highResistorDarkVoltageValue = 947
+};
