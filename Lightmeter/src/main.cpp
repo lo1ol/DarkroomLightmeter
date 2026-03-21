@@ -96,7 +96,7 @@ void loop() {
     gHardware.tick();
 
     bool needUpdateDisplay = true;
-    if ((gMode == Mode::ShowAbs || gMode == Mode::ShowRel) && gShowRelBtn.click()) {
+    if (gMode == Mode::ShowAbs && gShowRelBtn.click()) {
         gRelMeasure = gLightmeter.getLastMeasure();
         gMode = Mode::ShowRel;
     } else if (gMode == Mode::ShowAbs && gEncoderBtn.click()) {
