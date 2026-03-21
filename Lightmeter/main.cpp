@@ -1,4 +1,4 @@
-#include "Utils/SafeEncButton.h"
+#include "SafeEncButton.h"
 
 #include <gio/gio.h>
 
@@ -7,7 +7,7 @@
 
 #include "Hardware.h"
 #include "Lightmeter.h"
-#include "Utils/Utils.h"
+#include "Utils.h"
 
 namespace {
 

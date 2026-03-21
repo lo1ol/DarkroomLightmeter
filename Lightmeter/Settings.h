@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdint.h>
-#include "Utils/Time.h"
+#include "Time.h"
 
 struct Settings {
     void updateEEPROM();

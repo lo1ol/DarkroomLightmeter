@@ -10,7 +10,7 @@
 #include <math.h>
 
 #include "Hardware.h"
-#include "Utils/Utils.h"
+#include "Utils.h"
 
 #define MAX_BRIGHTNESS float(int32_t(AMP_R_HIGH) * GAIN_AMP * (1 << 15))
 

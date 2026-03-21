@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Utils/SafeEncButton.h"
+#include "SafeEncButton.h"
 
 #include "Config.h"
 #include "DTEncoder.h"

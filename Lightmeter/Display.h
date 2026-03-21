@@ -4,7 +4,7 @@
 
 #include "Config.h"
 #include "Settings.h"
-#include "Utils/Time.h"
+#include "Time.h"
 
 class Display {
 public:
