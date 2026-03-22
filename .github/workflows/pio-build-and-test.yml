@@ -1,0 +1,27 @@
+name: Build and test
+
+on: [push]
+
+jobs:
+  build-and-test:
+    strategy:
+      matrix:
+        env: [nanoatmega328]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install platformio
+        run: |
+          curl -fsSL -o get-platformio.py https://raw.githubusercontent.com/platformio/platformio-core-installer/master/get-platformio.py
+          python3 get-platformio.py
+
+      - name: Run build
+        if: ${{ matrix.env == 'nanoatmega328' }}
+        run: ~/.platformio/penv/bin/platformio run -d .
