@@ -18,7 +18,6 @@ void Hardware::init() {
     power.autoCalibrate();
     power.setSleepResolution(SLEEP_8192MS);
 
-    pinMode(ENCODER_POWER_PIN, OUTPUT);
     pinMode(ADC_MULTIMPLEXER_POWER_PIN, OUTPUT);
     pinMode(DISPLAY_POWER_PIN, OUTPUT);
     pinMode(DIOD_POWER_PIN, OUTPUT);
@@ -33,13 +32,22 @@ again:
     gDisplay.tick();
     gLightmeter.tick();
 
-    if (m_justWakedUp) {
-        gShowRelBtn.skipEvents();
-        gEncoderBtn.skipEvents();
+    if (m_justWakedUp)
         m_justWakedUp = static_cast<uint32_t>(millis()) - m_wakeUpTime < 100;
+
+    if (gShowRelBtn.tick()) {
+        m_lastActionTime = millis();
+        if (m_justWakedUp)
+            gShowRelBtn.skipEvents();
     }
 
-    if (gEncoder.tick() || gShowRelBtn.tick() || gEncoderBtn.tick())
+    if (gEncoderBtn.tick()) {
+        m_lastActionTime = millis();
+        if (m_justWakedUp)
+            gEncoderBtn.skipEvents();
+    }
+
+    if (gEncoder.tick())
         m_lastActionTime = millis();
 
     gSleepBtn.tick(gEncoderBtn, gShowRelBtn);
@@ -106,7 +114,6 @@ void Hardware::poweron() {
     detachPinChangeInterrupt(digitalPinToPinChangeInterrupt(ENCODER_BTN_PIN));
     detachPinChangeInterrupt(digitalPinToPinChangeInterrupt(SHOW_REL_BTN_PIN));
 
-    digitalWrite(ENCODER_POWER_PIN, HIGH);
     digitalWrite(DISPLAY_POWER_PIN, HIGH);
     digitalWrite(ADC_MULTIMPLEXER_POWER_PIN, HIGH);
     digitalWrite(DIOD_POWER_PIN, HIGH);
@@ -114,11 +121,6 @@ void Hardware::poweron() {
     gEncoder.poweron();
     gDisplay.poweron();
     gLightmeter.poweron();
-
-    if (gEncoderBtn.tick())
-        gEncoderBtn.skipEvents();
-    if (gShowRelBtn.tick())
-        gShowRelBtn.skipEvents();
 
     m_justWakedUp = true;
     m_wakeUpTime = millis();
