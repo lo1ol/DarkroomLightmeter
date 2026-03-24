@@ -24,7 +24,7 @@ public:
     void init();
     void tick();
 
-    void goToSleep() { m_goToSleep = true; }
+    bool goingToSleep() { return m_goingToSleep; }
 
 private:
     void sleep();
@@ -35,7 +35,7 @@ private:
     void startCalibration();
 
     bool m_disabled = false;
-    bool m_goToSleep = false;
+    bool m_goingToSleep = false;
     uint32_t m_lastActionTime;
     bool m_justWakedUp = false;
     uint32_t m_wakeUpTime;

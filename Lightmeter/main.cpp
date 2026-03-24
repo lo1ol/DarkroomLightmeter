@@ -95,6 +95,13 @@ void loop() {
 
     gHardware.tick();
 
+    if (gHardware.goingToSleep()) {
+        if (gMode == Mode::SetBase)
+            finishSetBase();
+        gMode = Mode::ShowAbs;
+        return;
+    }
+
     // used only for ShowAbs and ShowRel
     bool needUpdateDisplay = false;
 
@@ -110,39 +117,23 @@ void loop() {
         } else if (gEncoderBtn.hold() && !gSleepBtn.pressing()) {
             startSetBase();
             gMode = Mode::SetBase;
-        } else if (gSleepBtn.hold()) {
-            gHardware.goToSleep();
-            return;
         }
         break;
     case Mode::ShowRel:
         if ((gShowRelBtn.hold() || gEncoderBtn.hold()) && !gSleepBtn.pressing()) {
             gMode = Mode::ShowAbs;
             needUpdateDisplay = true;
-        } else if (gSleepBtn.hold()) {
-            gMode = Mode::ShowAbs;
-            gHardware.goToSleep();
-            return;
         }
         break;
     case Mode::ShowTime:
         if (gEncoderBtn.click() || (gEncoderBtn.hold() && !gSleepBtn.pressing())) {
             needUpdateDisplay = true;
             gMode = Mode::ShowAbs;
-        } else if (gSleepBtn.hold()) {
-            gMode = Mode::ShowAbs;
-            gHardware.goToSleep();
         }
         return;
     case Mode::SetBase:
         if (gEncoderBtn.hold() && !gSleepBtn.pressing()) {
-            finishSetBase();
             gMode = Mode::ShowAbs;
-        } else if (gSleepBtn.hold()) {
-            finishSetBase();
-            gMode = Mode::ShowAbs;
-            gHardware.goToSleep();
-            return;
         }
 
         handleSetBase();

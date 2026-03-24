@@ -24,9 +24,13 @@ void Hardware::init() {
 }
 
 void Hardware::tick() {
-again:
     gDisplay.tick();
     gLightmeter.tick();
+
+    if (m_goingToSleep) {
+        sleep();
+        m_goingToSleep = false;
+    }
 
     if (m_justWakedUp)
         m_justWakedUp = static_cast<uint32_t>(millis()) - m_wakeUpTime < 100;
@@ -48,11 +52,8 @@ again:
 
     gSleepBtn.tick(gEncoderBtn, gShowRelBtn);
 
-    if (m_goToSleep || static_cast<uint32_t>(millis() - m_lastActionTime) > AUTOSLEEP_TIME) {
-        m_goToSleep = false;
-        sleep();
-        goto again;
-    }
+    if (gSleepBtn.hold() || static_cast<uint32_t>(millis() - m_lastActionTime) > AUTOSLEEP_TIME)
+        m_goingToSleep = true;
 }
 
 void Hardware::wakeUp() {
