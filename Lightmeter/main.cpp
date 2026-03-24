@@ -95,32 +95,56 @@ void loop() {
 
     gHardware.tick();
 
-    bool needUpdateDisplay = true;
-    if (gMode == Mode::ShowAbs && gShowRelBtn.click()) {
-        gRelMeasure = gLightmeter.getLastMeasure();
-        gMode = Mode::ShowRel;
-    } else if (gMode == Mode::ShowAbs && gEncoderBtn.click()) {
-        gMode = Mode::ShowTime;
-    } else if (gMode == Mode::ShowTime && gEncoderBtn.click()) {
-        gMode = Mode::ShowAbs;
-    } else if (gMode == Mode::ShowAbs && gEncoderBtn.hold() && !gSleepBtn.pressing()) {
-        startSetBase();
-        gMode = Mode::SetBase;
-    } else if (gMode == Mode::SetBase && gEncoderBtn.hold() && !gSleepBtn.pressing()) {
-        finishSetBase();
-        gMode = Mode::ShowAbs;
-    } else if (gSleepBtn.hold()) {
-        if (gMode == Mode::SetBase)
-            finishSetBase();
-        gMode = Mode::ShowAbs;
-        gHardware.goToSleep();
-    } else if ((gShowRelBtn.hold() || gEncoderBtn.hold()) && !gSleepBtn.pressing()) {
-        gMode = Mode::ShowAbs;
-    } else {
-        needUpdateDisplay = false;
-    }
+    // used only for ShowAbs and ShowRel
+    bool needUpdateDisplay = false;
 
-    if (gMode == Mode::SetBase) {
+    switch (gMode) {
+    case Mode::ShowAbs:
+        if (gShowRelBtn.click()) {
+            needUpdateDisplay = true;
+            gRelMeasure = gLightmeter.getLastMeasure();
+            gMode = Mode::ShowRel;
+        } else if (gEncoderBtn.click()) {
+            gMode = Mode::ShowTime;
+            gDisplay.showTime(calcSuggestedTime(gLastShownAbsVal));
+        } else if (gEncoderBtn.hold() && !gSleepBtn.pressing()) {
+            startSetBase();
+            gMode = Mode::SetBase;
+        } else if (gSleepBtn.hold()) {
+            gHardware.goToSleep();
+            return;
+        }
+        break;
+    case Mode::ShowRel:
+        if ((gShowRelBtn.hold() || gEncoderBtn.hold()) && !gSleepBtn.pressing()) {
+            gMode = Mode::ShowAbs;
+            needUpdateDisplay = true;
+        } else if (gSleepBtn.hold()) {
+            gMode = Mode::ShowAbs;
+            gHardware.goToSleep();
+            return;
+        }
+        break;
+    case Mode::ShowTime:
+        if (gEncoderBtn.click() || (gEncoderBtn.hold() && !gSleepBtn.pressing())) {
+            needUpdateDisplay = true;
+            gMode = Mode::ShowAbs;
+        } else if (gSleepBtn.hold()) {
+            gMode = Mode::ShowAbs;
+            gHardware.goToSleep();
+        }
+        return;
+    case Mode::SetBase:
+        if (gEncoderBtn.hold() && !gSleepBtn.pressing()) {
+            finishSetBase();
+            gMode = Mode::ShowAbs;
+        } else if (gSleepBtn.hold()) {
+            finishSetBase();
+            gMode = Mode::ShowAbs;
+            gHardware.goToSleep();
+            return;
+        }
+
         handleSetBase();
         return;
     }
@@ -141,8 +165,6 @@ void loop() {
         gDisplay.showRelVal(gLightmeter.getLastMeasure() - gRelMeasure);
         break;
     case Mode::ShowTime:
-        gDisplay.showTime(calcSuggestedTime(gLastShownAbsVal));
-        break;
     case Mode::SetBase:
         assert(false);
         break;

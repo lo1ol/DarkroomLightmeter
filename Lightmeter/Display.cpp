@@ -2,15 +2,34 @@
 
 #include <Arduino.h>
 
-Display::Display() : m_display(DISPLAY_DIO_PIN, DISPLAY_CLK_PIN, true) {}
+Display::Display() : m_display(DISPLAY_DIO_PIN, DISPLAY_CLK_PIN, true) {
+    pinMode(DISPLAY_POWER_PIN, OUTPUT);
+}
 
 void Display::poweron() {
+    m_display.buffer[0] = 0;
+    m_display.buffer[1] = 0;
+    m_display.buffer[2] = 0;
+    m_display.buffer[3] = 0;
+
+    digitalWrite(DISPLAY_POWER_PIN, HIGH);
+    m_display.update();
     m_display.power(true);
+
     m_display.brightness(0);
+    m_needUpdate = false;
+    m_blinking = false;
 }
 
 void Display::poweroff() {
+    m_display.buffer[0] = 0;
+    m_display.buffer[1] = 0;
+    m_display.buffer[2] = 0;
+    m_display.buffer[3] = 0;
+    m_display.update();
+
     m_display.power(false);
+    digitalWrite(DISPLAY_POWER_PIN, LOW);
 }
 
 void Display::showVal(uint16_t val, ShowValMode mode) {
