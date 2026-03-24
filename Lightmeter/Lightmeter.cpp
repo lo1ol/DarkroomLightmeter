@@ -40,12 +40,17 @@ void buildDarkVoltageMap() {
 } // namespace
 
 Lightmeter::Lightmeter() : m_ads(0x48) {
+    pinMode(ADC_MULTIMPLEXER_POWER_PIN, OUTPUT);
+    pinMode(DIOD_POWER_PIN, OUTPUT);
     pinMode(MULTIPLEXER_LOW_RESISTOR_PIN, OUTPUT);
     digitalWrite(MULTIPLEXER_LOW_RESISTOR_PIN, MULTIPLEXER_LOW_RESISTOR_VALUE);
     buildDarkVoltageMap();
 }
 
 void Lightmeter::poweron() {
+    digitalWrite(DIOD_POWER_PIN, HIGH);
+    digitalWrite(ADC_MULTIMPLEXER_POWER_PIN, HIGH);
+
     m_ampLevel = AmpLevel::R_LOW_G0;
     digitalWrite(MULTIPLEXER_LOW_RESISTOR_PIN, MULTIPLEXER_LOW_RESISTOR_VALUE);
     pinMode(ADC_READY_PIN, INPUT_PULLUP);
@@ -72,6 +77,9 @@ void Lightmeter::poweroff() {
     m_ampLevel = AmpLevel::R_LOW_G0;
     digitalWrite(MULTIPLEXER_LOW_RESISTOR_PIN, LOW);
     pinMode(ADC_READY_PIN, INPUT);
+
+    digitalWrite(DIOD_POWER_PIN, LOW);
+    digitalWrite(ADC_MULTIMPLEXER_POWER_PIN, LOW);
 }
 
 void Lightmeter::tick() {

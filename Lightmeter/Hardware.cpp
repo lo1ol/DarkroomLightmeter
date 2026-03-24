@@ -18,9 +18,6 @@ void Hardware::init() {
     power.autoCalibrate();
     power.setSleepResolution(SLEEP_8192MS);
 
-    pinMode(ADC_MULTIMPLEXER_POWER_PIN, OUTPUT);
-    pinMode(DIOD_POWER_PIN, OUTPUT);
-
     poweron();
 
     gSettings = Settings::load();
@@ -78,9 +75,6 @@ void Hardware::sleep() {
 }
 
 void Hardware::poweroff() {
-    digitalWrite(DIOD_POWER_PIN, LOW);
-    digitalWrite(ADC_MULTIMPLEXER_POWER_PIN, LOW);
-
     gDisplay.poweroff();
     gLightmeter.poweroff();
     gEncoder.poweroff();
@@ -111,9 +105,6 @@ void Hardware::poweron() {
     detachPinChangeInterrupt(digitalPinToPinChangeInterrupt(ENCODER_DT_PIN));
     detachPinChangeInterrupt(digitalPinToPinChangeInterrupt(ENCODER_BTN_PIN));
     detachPinChangeInterrupt(digitalPinToPinChangeInterrupt(SHOW_REL_BTN_PIN));
-
-    digitalWrite(ADC_MULTIMPLEXER_POWER_PIN, HIGH);
-    digitalWrite(DIOD_POWER_PIN, HIGH);
 
     gDisplay.poweron();
     gEncoder.poweron();
