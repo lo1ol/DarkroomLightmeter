@@ -18,12 +18,6 @@ public:
     bool calibrate();
 
 private:
-    void requestNextMeasure();
-    int8_t ampAdjust(uint16_t val) const;
-
-    ADS1115 m_ads;
-    volatile bool m_readyFlag = false;
-
     enum AmpLevel : uint8_t {
         R_LOW_G0,
         R_LOW_G1,
@@ -31,8 +25,16 @@ private:
         R_HIGH_G1,
     };
 
-    AmpLevel m_ampLevel = AmpLevel::R_LOW_G0;
+    void requestNextMeasure(AmpLevel, bool forceSetAmp = false);
+    int8_t ampAdjust(int16_t val) const;
+
+    int16_t syncGetVal(AmpLevel);
+
+    ADS1115 m_ads;
+    volatile bool m_readyFlag;
+
+    AmpLevel m_ampLevel;
     int32_t m_measures[MEASURE_SOFT_CNT] = {};
     uint8_t m_measureIteration = 0;
-    bool m_dropNextValue = true;
+    bool m_dropNextValue;
 };

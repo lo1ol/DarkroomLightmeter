@@ -43,7 +43,6 @@ Lightmeter::Lightmeter() : m_ads(0x48) {
     pinMode(ADC_MULTIMPLEXER_POWER_PIN, OUTPUT);
     pinMode(DIOD_POWER_PIN, OUTPUT);
     pinMode(MULTIPLEXER_LOW_RESISTOR_PIN, OUTPUT);
-    digitalWrite(MULTIPLEXER_LOW_RESISTOR_PIN, MULTIPLEXER_LOW_RESISTOR_VALUE);
     buildDarkVoltageMap();
 }
 
@@ -51,30 +50,26 @@ void Lightmeter::poweron() {
     digitalWrite(DIOD_POWER_PIN, HIGH);
     digitalWrite(ADC_MULTIMPLEXER_POWER_PIN, HIGH);
 
-    m_ampLevel = AmpLevel::R_LOW_G0;
-    digitalWrite(MULTIPLEXER_LOW_RESISTOR_PIN, MULTIPLEXER_LOW_RESISTOR_VALUE);
-    pinMode(ADC_READY_PIN, INPUT_PULLUP);
-    delay(10);
-
     Wire.begin();
     m_ads.begin();
     m_ads.setDataRate(ADS1X15_DATARATE_0);
     m_ads.setComparatorThresholdHigh(0x8000);
     m_ads.setComparatorThresholdLow(0x0000);
     m_ads.setComparatorQueConvert(0);
+    m_ads.setMode(0);
 
+    pinMode(ADC_READY_PIN, INPUT_PULLUP);
     attachPinChangeInterrupt(
         digitalPinToPinChangeInterrupt(ADC_READY_PIN), [] { gLightmeter.m_readyFlag = true; }, RISING);
 
-    m_ads.setMode(0);
-    requestNextMeasure();
+    m_readyFlag = true;
+    requestNextMeasure(AmpLevel::R_LOW_G0, true);
     delay(10);
 }
 
 void Lightmeter::poweroff() {
     pinMode(A4, INPUT);
     pinMode(A5, INPUT);
-    m_ampLevel = AmpLevel::R_LOW_G0;
     digitalWrite(MULTIPLEXER_LOW_RESISTOR_PIN, LOW);
     pinMode(ADC_READY_PIN, INPUT);
 
@@ -88,7 +83,7 @@ void Lightmeter::tick() {
 
     if (m_dropNextValue) {
         m_dropNextValue = false;
-        requestNextMeasure();
+        requestNextMeasure(m_ampLevel);
         return;
     }
 
@@ -101,19 +96,10 @@ void Lightmeter::tick() {
     m_measures[m_measureIteration] = adjustVal;
 
     auto adjust = ampAdjust(val);
-    if (adjust) {
-        reinterpret_cast<int8_t&>(m_ampLevel) += adjust;
-
-        bool highResistor = m_ampLevel > AmpLevel::R_LOW_G1;
-        digitalWrite(MULTIPLEXER_LOW_RESISTOR_PIN,
-                     highResistor ? !MULTIPLEXER_LOW_RESISTOR_VALUE : MULTIPLEXER_LOW_RESISTOR_VALUE);
-        m_dropNextValue = true;
-    }
-
-    requestNextMeasure();
+    requestNextMeasure(static_cast<AmpLevel>(static_cast<int8_t>(m_ampLevel) + adjust));
 }
 
-int8_t Lightmeter::ampAdjust(uint16_t val) const {
+int8_t Lightmeter::ampAdjust(int16_t val) const {
     switch (m_ampLevel) {
     case AmpLevel::R_LOW_G0:
         if (val < 1000)
@@ -122,7 +108,7 @@ int8_t Lightmeter::ampAdjust(uint16_t val) const {
     case AmpLevel::R_LOW_G1:
         if (val > 31000)
             return -1;
-        if (val < (1000 + gSettings.lowResistorDarkVoltageValue))
+        if (val < static_cast<int16_t>(1000 + gSettings.lowResistorDarkVoltageValue))
             return 1;
         return 0;
     case AmpLevel::R_HIGH_G0:
@@ -140,11 +126,23 @@ int8_t Lightmeter::ampAdjust(uint16_t val) const {
     return 0;
 }
 
-void Lightmeter::requestNextMeasure() {
-    m_readyFlag = false;
+void Lightmeter::requestNextMeasure(AmpLevel amp, bool forceSetAmp) {
+    while (!m_readyFlag) {}
 
-    bool needGain = m_ampLevel == AmpLevel::R_LOW_G1 || m_ampLevel == AmpLevel::R_HIGH_G1;
+    if (m_ampLevel != amp || forceSetAmp) {
+        bool needHighResistor = amp > AmpLevel::R_LOW_G1;
+        digitalWrite(MULTIPLEXER_LOW_RESISTOR_PIN,
+                     needHighResistor ? !MULTIPLEXER_LOW_RESISTOR_VALUE : MULTIPLEXER_LOW_RESISTOR_VALUE);
+
+        m_dropNextValue = true;
+    }
+
+    m_ampLevel = amp;
+
+    bool needGain = amp == AmpLevel::R_LOW_G1 || amp == AmpLevel::R_HIGH_G1;
     m_ads.setGain(needGain ? 16 : 0);
+
+    m_readyFlag = false;
     m_ads.requestADC_Differential_0_3();
 }
 
@@ -152,29 +150,34 @@ uint16_t Lightmeter::getLastMeasure() const {
     return toLogD(m_measures);
 }
 
+int16_t Lightmeter::syncGetVal(AmpLevel amp) {
+again:
+    bool needDrop = amp != m_ampLevel || m_dropNextValue;
+
+    while (!m_readyFlag) {}
+    auto val = m_ads.getValue();
+    m_dropNextValue = false;
+
+    requestNextMeasure(amp);
+
+    if (needDrop)
+        goto again;
+
+    return val;
+}
+
 bool Lightmeter::calibrate() {
+    auto newSettings = gSettings;
+
     constexpr uint8_t kTestsCnt = 100;
 
-    for (int8_t highResistor = 0; highResistor != 2; ++highResistor) {
+    for (int8_t lowResistor = 0; lowResistor != 2; ++lowResistor) {
         delay(5000);
-        if (highResistor) {
-            m_ampLevel = AmpLevel::R_HIGH_G1;
-            digitalWrite(MULTIPLEXER_LOW_RESISTOR_PIN, !MULTIPLEXER_LOW_RESISTOR_VALUE);
-        } else {
-            m_ampLevel = AmpLevel::R_LOW_G1;
-            digitalWrite(MULTIPLEXER_LOW_RESISTOR_PIN, MULTIPLEXER_LOW_RESISTOR_VALUE);
-        }
+        auto amp = lowResistor ? AmpLevel::R_LOW_G1 : AmpLevel::R_HIGH_G1;
 
-        uint32_t res = 0;
-
-        // drop first value goten on wront resistor
-        // drop second value after changing a resistor
-        for (uint8_t i = 0; i != (kTestsCnt + 2); ++i) {
-            while (!m_readyFlag) {}
-            auto val = m_ads.getValue();
-            requestNextMeasure();
-            if (i < 2)
-                continue;
+        int32_t res = 0;
+        for (uint8_t i = 0; i != kTestsCnt; ++i) {
+            auto val = syncGetVal(amp);
 
             if (val > 5000)
                 return false;
@@ -184,12 +187,13 @@ bool Lightmeter::calibrate() {
 
         res /= double(kTestsCnt);
 
-        if (highResistor)
-            gSettings.highResistorDarkVoltageValue = res;
+        if (lowResistor)
+            newSettings.lowResistorDarkVoltageValue = res;
         else
-            gSettings.lowResistorDarkVoltageValue = res;
+            newSettings.highResistorDarkVoltageValue = res;
     }
 
+    gSettings = newSettings;
     gSettings.updateEEPROM();
     buildDarkVoltageMap();
 
