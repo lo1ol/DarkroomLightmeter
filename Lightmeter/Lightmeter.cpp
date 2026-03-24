@@ -19,12 +19,12 @@ constexpr uint16_t gAmpMap[]{ AMP_R_HIGH * GAIN_AMP, AMP_R_HIGH, GAIN_AMP, 1 };
 
 static uint16_t gAmpDarkVoltageMap[4]{};
 
-uint16_t toLogD(const int32_t (&kMeasures)[MEASURE_SOFT_CNT]) {
+uint16_t toLogD(const int32_t (&measures)[MEASURE_SOFT_CNT]) {
     int64_t res = 0;
-    for (auto measure : kMeasures)
+    for (auto measure : measures)
         res += measure;
 
-    if (res <= 0)
+    if (res <= 16 * MEASURE_SOFT_CNT)
         return 999;
 
     return lround(fastLog10((MAX_BRIGHTNESS * MEASURE_SOFT_CNT) / res) * 100);
