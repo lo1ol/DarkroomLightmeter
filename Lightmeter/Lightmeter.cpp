@@ -166,27 +166,23 @@ bool Lightmeter::calibrate() {
         }
 
         uint32_t res = 0;
-        uint8_t i = 0;
 
         // drop first value goten on wront resistor
         // drop second value after changing a resistor
-        while (i != (kTestsCnt + 2)) {
-            if (!m_readyFlag)
+        for (uint8_t i = 0; i != (kTestsCnt + 2); ++i) {
+            while (!m_readyFlag) {}
+            auto val = m_ads.getValue();
+            requestNextMeasure();
+            if (i < 2)
                 continue;
 
-            auto val = m_ads.getValue();
-            if (i > 1) {
-                if (val > 5000)
-                    return false;
+            if (val > 5000)
+                return false;
 
-                res += m_ads.getValue(); // drop first value
-            }
-
-            ++i;
-            requestNextMeasure();
+            res += val;
         }
 
-        res /= kTestsCnt;
+        res /= double(kTestsCnt);
 
         if (highResistor)
             gSettings.highResistorDarkVoltageValue = res;
