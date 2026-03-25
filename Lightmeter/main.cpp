@@ -90,7 +90,6 @@ enum class Mode {
 void loop() {
     static Mode gMode = Mode::ShowAbs;
     static uint32_t gLastShowTime = 0;
-    static uint16_t gRelMeasure;
     static uint16_t gLastShownAbsVal;
 
     gHardware.tick();
@@ -109,7 +108,6 @@ void loop() {
     case Mode::ShowAbs:
         if (gShowRelBtn.click()) {
             needUpdateDisplay = true;
-            gRelMeasure = gLightmeter.getLastMeasure();
             gMode = Mode::ShowRel;
         } else if (gEncoderBtn.click()) {
             gMode = Mode::ShowTime;
@@ -153,7 +151,7 @@ void loop() {
         gDisplay.showVal(gLastShownAbsVal);
         break;
     case Mode::ShowRel:
-        gDisplay.showRelVal(gLightmeter.getLastMeasure() - gRelMeasure);
+        gDisplay.showRelVal(gLightmeter.getLastMeasure() - gLastShownAbsVal);
         break;
     case Mode::ShowTime:
     case Mode::SetBase:

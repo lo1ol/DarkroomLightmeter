@@ -68,9 +68,10 @@ void Lightmeter::poweron() {
 }
 
 void Lightmeter::poweroff() {
+    digitalWrite(MULTIPLEXER_LOW_RESISTOR_PIN, LOW);
+    detachPinChangeInterrupt(digitalPinToPinChangeInterrupt(ADC_READY_PIN));
     pinMode(A4, INPUT);
     pinMode(A5, INPUT);
-    digitalWrite(MULTIPLEXER_LOW_RESISTOR_PIN, LOW);
     pinMode(ADC_READY_PIN, INPUT);
 
     digitalWrite(DIOD_POWER_PIN, LOW);

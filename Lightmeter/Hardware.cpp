@@ -86,6 +86,10 @@ void Hardware::poweroff() {
     while (gShowRelBtn.tick() || gEncoderBtn.tick() || gShowRelBtn.pressing() || gEncoderBtn.pressing()) {
         if (millis() - holdTime < 5000)
             continue;
+
+        gDisplay.poweron();
+        gLightmeter.poweron();
+        gEncoder.poweron();
         startCalibration();
         return;
     }
@@ -119,7 +123,6 @@ void Hardware::poweron() {
 }
 
 void Hardware::startCalibration() {
-    poweron();
     gDisplay.showCalibrationAnim();
     bool res = gLightmeter.calibrate();
     gDisplay.showRes(res);
