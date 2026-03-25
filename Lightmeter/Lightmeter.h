@@ -33,7 +33,7 @@ private:
     ADS1115 m_ads;
     volatile bool m_readyFlag;
 
-    AmpLevel m_ampLevel;
+    AmpLevel m_ampLevel = R_HIGH_G1;
     int32_t m_measures[MEASURE_SOFT_CNT] = {};
     uint8_t m_measureIteration = 0;
     bool m_dropNextValue;

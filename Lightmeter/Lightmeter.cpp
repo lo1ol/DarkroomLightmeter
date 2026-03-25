@@ -63,7 +63,7 @@ void Lightmeter::poweron() {
         digitalPinToPinChangeInterrupt(ADC_READY_PIN), [] { gLightmeter.m_readyFlag = true; }, RISING);
 
     m_readyFlag = true;
-    requestNextMeasure(AmpLevel::R_LOW_G0, true);
+    requestNextMeasure(m_ampLevel, true);
     delay(10);
 }
 
