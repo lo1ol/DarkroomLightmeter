@@ -105,16 +105,16 @@ bool DTEncoder::getInt(uint16_t& choosen, uint16_t min, uint16_t max, bool ring)
         return false;
 
     if (shift > 1 && shift >= static_cast<int16_t>(max - min))
-        shift = (max - min)/2;
+        shift = (max - min + 1)/2;
     if (shift < -1 && -shift >= static_cast<int16_t>(max - min))
-        shift = -(max - min)/2;
+        shift = -(max - min + 1)/2;
 
     res += shift;
 
     if (res < static_cast<int16_t>(min))
-        res = ring ? (res + max - min) : min;
+        res = ring ? (res + max - min + 1) : min;
     else if (res > static_cast<int16_t>(max))
-        res = ring ? (res - max + min) : max;
+        res = ring ? (res - max + min - 1) : max;
 
     if (static_cast<uint16_t>(res) == choosen)
         return false;

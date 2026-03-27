@@ -26,4 +26,4 @@
 #define AMP_R_HIGH 300
 #define GAIN_AMP 24
 
-#define AUTOSLEEP_TIME (1000ULL * 60 * 2)
+#define AUTOSLEEP_TIME (1000ULL * 60 * 3)

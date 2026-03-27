@@ -41,7 +41,7 @@ void handleSetBase() {
 
     switch (gSetBaseStage) {
     case SetBaseStage::LodD:
-        if (gEncoder.getInt(gSettings.baseLogD, 20, 600)) {
+        if (gEncoder.getInt(gSettings.baseLogD, 20, 599)) {
             gDisplay.showVal(gSettings.baseLogD, Display::ShowValMode::Set);
         }
         break;
