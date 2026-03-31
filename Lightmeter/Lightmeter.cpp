@@ -79,6 +79,8 @@ void Lightmeter::poweroff() {
 }
 
 void Lightmeter::tick() {
+    m_hasUpdates = false;
+
     if (!m_readyFlag)
         return;
 
@@ -95,6 +97,8 @@ void Lightmeter::tick() {
     adjustVal *= gAmpMap[m_ampLevel];
     m_measureIteration = (m_measureIteration + 1) % MEASURE_SOFT_CNT;
     m_measures[m_measureIteration] = adjustVal;
+
+    m_hasUpdates = true;
 
     auto adjust = ampAdjust(val);
     requestNextMeasure(static_cast<AmpLevel>(static_cast<int8_t>(m_ampLevel) + adjust));

@@ -16,6 +16,7 @@ public:
     void tick();
 
     bool calibrate();
+    bool hasUpdates() const { return m_hasUpdates; }
 
 private:
     enum AmpLevel : uint8_t {
@@ -37,4 +38,5 @@ private:
     int32_t m_measures[MEASURE_SOFT_CNT] = {};
     uint8_t m_measureIteration = 0;
     bool m_dropNextValue;
+    bool m_hasUpdates = false;
 };

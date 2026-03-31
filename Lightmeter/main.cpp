@@ -138,20 +138,51 @@ void loop() {
         return;
     }
 
-    needUpdateDisplay |= millis() - gLastShowTime > 250;
+    auto measure = gLightmeter.getLastMeasure();
+    static auto gLastMeasure = measure;
+
+    // This block is used to control stability of value changing
+    // If values increasing or decreasing stadily
+    // than we can update values on display faster
+    //
+    // But for not stable changes we need to wait more time
+    if (gLightmeter.hasUpdates()) {
+        static bool gValuesIsIncreasing = false;
+        static uint8_t gStabilityScore = 0;
+
+        auto newDir = gValuesIsIncreasing;
+
+        if (measure > gLastMeasure)
+            newDir = true;
+        if (measure < gLastMeasure)
+            newDir = false;
+
+        if (gValuesIsIncreasing != newDir)
+            gStabilityScore = 0;
+
+        gValuesIsIncreasing = newDir;
+
+        if (gStabilityScore == 3) {
+            needUpdateDisplay |= millis() - gLastShowTime > 50;
+        } else {
+            ++gStabilityScore;
+            needUpdateDisplay |= millis() - gLastShowTime > 250;
+        }
+    }
 
     if (!needUpdateDisplay)
         return;
 
     gLastShowTime = millis();
+    gLastMeasure = measure;
 
     switch (gMode) {
     case Mode::ShowAbs:
-        gLastShownAbsVal = gLightmeter.getLastMeasure();
-        gDisplay.showVal(gLastShownAbsVal);
+        gLastShownAbsVal = measure;
+        gDisplay.showVal(measure);
         break;
     case Mode::ShowRel:
-        gDisplay.showRelVal(gLightmeter.getLastMeasure() - gLastShownAbsVal);
+        gDisplay.showRelVal(measure - gLastShownAbsVal);
         break;
     case Mode::ShowTime:
     case Mode::SetBase:
