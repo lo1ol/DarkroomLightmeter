@@ -1,139 +1,148 @@
-# Экспонометр для даркрума
+# Darkroom Exposure Meter
 
-[3D модель (еще в работе)](https://www.thingiverse.com/thing:7319866)
+> [Инструкция на русском](./README_RU.md)
 
-## Описание
+[3D Model](https://www.thingiverse.com/thing:7319866)
 
-Это экспонометр для даркума. С помощью него можно замерять контраст негативов, а также получать предполагаемое время печати.
+[YouTube playlist with description, demonstration, and assembly](https://youtube.com/playlist?list=PLLB8YXu4D8PunXm6wkRArw5l53CUL2j-Z&si=r77Fl3qdb0qFjc_D)
 
-Устройство было сделано крайне простым -- в интерфейсе всего одна крутилка и 2 кнопки (одна на энкодере).
+## Description
 
-Для сборки используются самоые популярные компоненты. Единственный не популярный компонент -- сердце устройства -- это фотодиод OPT101.
+This is an densitometer for the darkroom. It allows you to measure negative contrast and obtain estimated printing times.
 
-### Управление
+The device is designed to be extremely simple. The interface consists of just one knob and 2 buttons (one integrated into the encoder).
 
-1. При запуске устройство показывает количество падающего света в logD. 30 logD == 1 стоп. Чем выше значение -- тем темнее падающий свет. Сами по себе значения ничего не значат -- они относительные. То есть значение 50 относительно 90 означает `свет ярче на 40 logD (4/3 стопа)`
-2. Нажми на кнопку сбоку устройства, чтобы начать замер относительно текущего значения (`-` -- означает, что свет ярче. `r` -- темнее)
-3. Удерживайте кнопку сбоку устройства, чтобы начать показывать снова абсолютные значения
-4. Нажмите на энкодер -- чтобы показать приблизительное время печати подсчитанное из базового. Нажмите на энкодер еще раз, чтобы снова начать абсолютных значений logD
-5. Удерживайте энкодер, чтобы перейти к установке базового времени (смотри подробнее далее). Нажатие на энкодер дает выбрать устанавливаемое значение в этом меню. Удерживай энкодер, чтобы вернуться назад
-6. Удерживай энкодер и кнопку замера, чтобы выключить устройство. Также оно выключится автоматически через 2 минуты
+Common components are used for the assembly. The only specialized component is OPT101 photodiode.
 
-### Калибровка
+### Controls
 
-Устройство желательно откалибровать перед работой. Для этого
-1. нужно зайти в темное помещение, в котором нет никакого света
-2. накрыть дополнительно датчик чем-нибудь
-3. удерживать кнопку энкодера и замера более 5 секунд -- устройство начнет калибровку
-4. в это время экран выключится и устройство будет калибровать себя примерно 1 минуту
+1. Upon startup, the device shows the amount of incident light in logD. `30 logD == 1 stop`. The higher the value, the "darker" the incident light. The values are relative. For example, a value of 50 relative to 90 means `the light is brighter by 40 logD (4/3 stops)`
+2. Press the side button to start a measurement relative to the current value (`-` means the light is brighter, `r` -- darker)
+3. Hold the side button to return to absolute values
+4. Press the encoder to show the approximate printing time calculated from the base time. Press the encoder again to return to absolute values
+5. Hold the encoder to enter the base time setting menu (see details below). Pressing the encoder selects the value to be set in this menu. Hold the encoder to get back
+6. Hold both the encoder and the measurement button to turn off the device. Also, It turns off automatically after 2 minutes
 
-Чем лучше вы затените устройство, тем точнее будут показания
+### Common measurement tips
 
-### Установка базового времени
+1. Work with dimmed or turned off red light
+2. Remove your phone from darkroom. It could emit IR light (LiDAR, FaceID)
+3. Control angle of measured light. Use plexiglass scope for it
 
-1. Напечатайте идеальный в плане экспозиции отпечаток
-2. Замерьте абсолютные значения logD с печатаемого негатива не меняяя параметры на увеличителе (высоту, дифрагму). Вы можете замерить света/тени/кожу и т.п.
-3. Запишите в тетрадку снятые значения в таком формате:
+### Calibration
+
+It is recommended to calibrate the device before use. To do this:
+1. Enter a darkroom with no light at all
+2. Additionally cover the sensor with something opaque
+3. Hold the encoder and measurement button for more than 5 seconds. The device starts calibration
+4.` The screen will be turned off during calibration. Calibration takes approximately 1 minute
+
+### Setting the Base Time
+
+1. Print an ideally exposed print
+2. Measure the absolute logD values of some segment of the printed negative. Not change the enlarger parameters: height, aperture. You can measure highlights, shadows, skin tones, etc.
+3. Record the measured values in a notebook in the following format:
+
 ```
-Описание объекта на негативе | logD | Время печати
+Object description on negative | logD | Printing time
 ```
 
-Пример
+Example:
+
 ```
-кожа в тени     |    323     |   0:40
-света яркие     |    220     |   0:40
+skin in shadow    |    323     |   0:40
+bright highlights |    220     |   0:40
 ```
 
-В эту таблицу в будущем можно также добавить название бумаги и другие параметры
+In the future, you can also add paper names, grade and other parameters to this table.
 
-4. Перейдите в режим установки базового времени удерживая энкодер
-5. Установите базовый logD
-6. Нажмите на энкодер -- установите минуты
-7. Нажмите на энкодер -- установите секунды
-8. Удерживайте энкодер, чтобы запомнить значение и вернуться в режим показа абсолютных logD
+4. Switch to base time setting mode
+5. Set the base logD
+6. Press the encoder. Set the minutes
+7. Press the encoder. Set the seconds
+8. Hold the encoder to save the value and return to absolute logD mode
 
-Теперь при нажатии на энкодер устройство будет показывать вам предполагаемое время печати относительно указанного базового logD и времени
+Now, when you press the encoder, the device will show you the estimated printing time relative to the specified base logD and time.
 
-Например:
-1. Вы выставили базовое значение `logD = 200, Time = 00:36` для кожи в тени
-2. Вы поставили другой негатив на котором тоже есть кожа в тени.
-3. Вы мерите эту кожу и устройство показывает вам `logD == 250`
-4. При нажатии на энкодер устройство покажет вам предполагаемое время печати `01:54` (`114 секунд == 36 * 2^(5/3)`)
+Example:
 
-### Как замерять контраст негатива
+1. You set a base value of `logD = 200, Time = 00:36` for skin in shadow
+2. You set up another negative that also has skin in shadow
+3. You measure this skin, and the device shows you `logD == 250`
+4. By pressing the encoder, the device will show you an estimated printing time `01:54` (`114 seconds == 36 * 2^(5/3)`)
 
-1. найдите в абслолютных значениях самый темный или светлый участок на негативе
-2. нажмите на боковую кнопку чтобы начать считать значения относительно него и найдите теперь самый светлый/темный участок
-3. полученное значение -- контраст негатива в logD
+### How to Measure Negative Contrast
 
-Советы:
-1. поднимите увеличительна самый верх, чтобы было удобнее мерить мелкие объекты
-2. откройте диафрагму на увеличителе
+1. Find the darkest or brightest area on the negative in absolute values
+2. Press the side button to start calculating values relative to it
+3. Now find the opposite (brightest/darkest) area
+4. The resulting value is the negative contrast in logD
 
-### Общие советы
+Tips:
 
-1. желательно отключить окружаемый красный свет для улучшения замера
-2. используйте кружочек-прицел над датчиком, чтобы мерить свет под прямым углом
+1. Raise the enlarger to the very top to make it easier to measure small objects
+2. Open the aperture on the enlarger
 
-## Сборка
+## Assembly
 
-### Необходимые компоненты
+### Required Components
 
-1. Arduino Nano Type-C. В нем нужно будет выломать диод питания, чтобы он не светил в корпусе. А также для снижения уровня потребления устройства откусить левую ножку стабилизатора напряжения. [Подробнее здесь](https://alexgyver.ru/lessons/power-sleep/#2-toc-title). Углы платы нужно будеть подрезать, чтобы она залезла в корпус
-2. Тактовая енопка 12x12x9мм. Высота может быть и другой -- под нее нужно будет просто подобрать крышку
-3. Энкодер EC11. Нужно будет отпилить часть энкодера, чтобы на него налезла крутилка
-4. 4ех сигментный дисплей на драйвере ТМ1637
-5. Аналоговый мультиплексор 74HC4067
-6. 16 битный АЦП ADS1115
-7. Фотодиодный модуль OPT101. Нужно взять версию с платой на которую он будет крепиться. Продается на aliexpress. [Проверенный лот 1](https://ali.click/hw0l314), [Провереренный лот 2](https://ali.click/wy0l31o)
-8. Резистор на 100кОм
-9. 3 резистора на 10мОм или 1 на 30мОм. Я соединял 3 резистора на 10мОм, чтобы получить на резистор на 30мОм
-10. Медный скотч для экранирования
-11. Провода
-12. гайки и винты m3 на 5 и 10 (можно повыше)
-13. Оргстекло 2мм, чтобы сделать прицел для наводки на фотодиод
+1. **Arduino Nano Type-C.** You will need to remove the power LED. So, it doesn't glow inside the case. Also, to reduce power consumption, snip off the left leg of the voltage regulator. [More details here](https://alexgyver.ru/lessons/power-sleep/#2-toc-title). The corners of the board will need to be trimmed to fit into the case
+2. **Tactile button 12x12x9mm.** The height can vary—you just need to choose a matching cap
+3. **Encoder EC11.** You will need to sawn off the some part of top of it to fit the knob
+4. **4-segment display** on a TM1637 driver
+5. **Analog multiplexer 74HC4067.** Used for switching the gain resistors on the photodiode
+6. **16-bit ADC ADS1115.** Used for reading values from the photodiode
+7. **Photodiode module OPT101.** Get the version with mounting PCB. Sold on AliExpress. [Verified Link 1](https://ali.click/hw0l314), [Verified Link 2](https://ali.click/wy0l31o)
+8. **100kOhm resistor**
+9. **3 resistors of 10mOhm or 1 of 30mOhm.** I connected three 10mOhm resistors to get a 30mOhm resistor
+10. **Copper tape** for shielding
+11. **Wires**
+12. **M3 nuts and screws** (5mm and 10mm, or slightly longer)
+13. **2mm Plexiglass** to make the sight for aiming at the photodiode
 
-Следующие компоненты опциональны. На случай если вы захотите сделать автономное устройство работающее от батареи
-1. Плата зарядки TP4056
-2. Преобразователь напряжения CKCS BS01 (5V)
-3. Аккумулятор размерами до 10x34x50. Я брал Литий-полимерный 103450 2000 мАч 3,7В
+The following components are optional, in case you want to make the device autonomous (battery-powered):
 
-Для стиля и затенения подсветки поверх экрана можно наложить полупрозрачный акрил
+1. **TP4056 charging board**
+2. **Voltage converter CKCS BS01 (5V)**
+3. **Battery** up to 10x34x50mm. I used a Li-Po 103450 2000 mAh 3.7V
+4. **Blue plastic light filter 1.5mm.** Green can also be used. Its filter part of the ambient red light
+5. **Translucent acrylic.** Used for style and screen dimming
 
-### Схема
+### Circuit
 
-> *Note:*  Пунктирным светом помечена часть отвечающая за питание от батарейки. Если вам не нужно, чтобы устройство работало автономно, то можете его не ставить
+> *Note:* The dotted lines mark the battery power section. If you don't need the device to be autonomous, you can omit it.
 
-![Схема](./docs/Circuit.jpg)
+![Circuit](./docs/Circuit.jpg)
 
-### Особенности сборки
+### Assembly Notes
 
-1. Фотодиод очень хорошо ловит внешние помехи. Поэтому весь корпус нужно изнутри проэкранировать медный скотч и приклеить землю к нему
-2. Выровните диод посередине дырки
-3. Батарея расположена под фотодиодом. Чтобы ножки диода не замыкались под ним -- произолируйте батарею изолентой
+1. The photodiode is very sensitive to external interference. Therefore, You will need to shield device case with copper tape. Ground should be connected to it.
+2. Do not overheat the photodiode during soldering. It can be easily damaged. Give it some time to cool down.
+3. Align the diode in the center of the hole.
+4. The battery is located under the photodiode. To prevent the diode's pins from shorting against it, isolate the battery with electrical tape.
+5. After assembling the device, ensure that no components are emitting light. You can break off any glowing LEDs.
+6. Check the current draw from the battery. It should be around **0.3mA** when the device is in sleep mode.
 
-### Видеоинструкция по сборке
+### Firmware
 
-// TODO
+The easiest way to upload the firmware is via the Arduino IDE:
 
-### Прошивка
+1. Install the Arduino IDE
+2. Clone this git project into any directory
+3. Open the .ino file via the Arduino IDE (`File` -\> `Open...` -\> `path to .ino file`)
+4. Install the project dependencies (`Tools` -\> `Manage Libraries...`):
+      * EncButton (by Alex Gyver)
+      * GyverIO (by Alex Gyver)
+      * GyverSegment (by Alex Gyver)
+      * GyverPower (by Alex Gyver)
+      * PinChangeInterrupt (by Nico Hood)
+      * CRC32 (by Christopher Baker)
+      * ADS1X15 (by Rob Tillaart)
+5. Select board — Arduino Nano and processor — ATmega328P
+6. Click the Upload button
 
-Самый простой способ залить прошивку -- через Arduino IDE
-3. Поставте Arduino IDE
-1. Склонируйе этот git проект в любую из директорий
-2. Откройте ino файл через Arduino IDE (`File`->`Open...`->`path to .ino` file)
-4. Установите зависимости проекта (`Tools` -> `Manage Libraries...`):
-    * EncButton (by Alex Gyver)
-    * GyverIO (by Alex Gyver)
-    * GyverSegment (by Alex Gyver)
-    * GyverPower (by Alex Gyver)
-    * PinChangeInterrupt (by Nico Hood)
-    * CRC32 (by Crystopher Baker)
-    * ADS1X15 (by Tob Tillaart)
-5. Выберете board -- Arduino Nano и processor --  ATmega328P
-6. Нажмите на кнопку Upload
-
-## Поддержка
+## Support
 
 tg: @lo1ol
 email: myprettycapybara@gmail.com
